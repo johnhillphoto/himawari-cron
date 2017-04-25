@@ -1,11 +1,9 @@
 const himawari = require('himawari');
-// const uuid = require('node-uuid');
 const Promise = require("bluebird");
 const cron = require('node-cron');
 let count = 0;
 
 const getImage = () => {
-    // const timeUUid = uuid.v1();
     const timeStamp = Date.now();
     const filename = `/Users/jhill/Pictures/earth/earth-${timeStamp}.JPG`;
 
@@ -20,55 +18,31 @@ const getImage = () => {
             skipEmpty: true,
             timeout: 30000,
             urls: false,
-            success: function () { 
+            success: () => { 
                 count++;
                 resolve(`${count} image done`);
             },
-            error: function (err) { 
+            error: err => { 
                 reject(new Error('problem in himawari, uh oh'));
             },
-            /**
-             * A callback that is fired every time a tile has been downloaded.
-             * @param  {Object} info Information about the download such as filepath, part, and total images
-             */
-            chunk: function (info) {
+            // chunk is fired for each piece as it is downloaded
+            chunk: info => {
                 console.log(`${count+1} image progress` + ': ' + info.part + '/' + info.total);
             }
         });
     });
 };
 
-
-
- 
+// set to run our task every 10 minutes
 let task = cron.schedule('*/10 * * * *', () => {
     console.log('starting...');
-  getImage()
-    .then(doneMessage => {
-        console.log(doneMessage);
-    })
-    .catch(error => {
-        error.log(error);
-    });
-}, true);
-
-// var task = cron.schedule('* * * * *', function() {
-//   console.log('immediately started');
-// }, false);
+    getImage()
+        .then(doneMessage => {
+            console.log(doneMessage);
+        })
+        .catch(error => {
+            error.log(error);
+        });
+    }, true);
  
 task.start();
-
-// Repeat(
-//     getImage()
-//     .then(doneMessage => {
-//     console.log(doneMessage);
-//     return done;
-//     })
-//     .catch(error => {
-//     error.log(error);
-//     })
-// )
-//        .every(600000, 'ms')
-//        .for(2240, 'minutes')
-//        .start.in(3, 'secs');
-       
